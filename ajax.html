@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>solicitud AJAX</title>
+</head>
+<body>
+    <button id="btn">cargar sitio</button>
+
+
+    <div id="response">
+
+    </div>
+
+    <script>
+       
+       const btn = document.getElementById('btn');
+       const response = document.getElementById('response');
+
+       
+        btn.addEventListener('click', cargarSitio);
+
+
+       function cargarSitio() {
+           fetch('https://rickandmortyapi.com/api/character')
+           .then(respuesta => respuesta.json())
+           .then(data => rendero(data))
+        
+       }
+
+       function rendero(data) {
+        //    console.log(data.results[0].name);
+        data.results.forEach(element => {
+            console.log(element.image);
+            response.innerHTML += `<img src="${element.image}"/>`
+        })
+       }
+
+
+
+
+
+
+    </script>
+</body>
+</html>
