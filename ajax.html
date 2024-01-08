@@ -1,47 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>solicitud AJAX</title>
+    <title>API de Rick and Morty</title>
+    <style>
+        #loader {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        #loader img {
+            width: 100px;
+            /* Ajusta el tamaño según sea necesario */
+            height: auto;
+        }
+
+        #response {
+            margin-top: 20px;
+            /* Espacio para evitar que la respuesta se superponga al indicador de carga */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            opacity: 0;
+            /* Inicialmente oculta las imágenes */
+            transition: opacity 0.5s;
+            /* Agrega una transición para suavizar la aparición */
+        }
+
+        #response.loaded {
+            opacity: 1;
+            /* Muestra las imágenes cuando todas hayan cargado */
+        }
+
+        #response img {
+            margin: 10px;
+            /* Añade espacio entre las imágenes */
+            border: 1px solid #ddd;
+            /* Añade un borde para mayor claridad */
+            border-radius: 5px;
+            /* Añade bordes redondeados */
+        }
+    </style>
 </head>
+
 <body>
-    <button id="btn">cargar sitio</button>
-
-
-    <div id="response">
-
+    <div id="response"></div>
+    <div id="loader">
+        <img src="https://usagif.com/wp-content/uploads/loading-11.gif" alt="Cargando...">
     </div>
 
     <script>
-       
-       const btn = document.getElementById('btn');
-       const response = document.getElementById('response');
+        let page = 1;
+        let isLoading = false;
+        const response = document.getElementById('response');
+        const loader = document.getElementById('loader');
 
-       
-        btn.addEventListener('click', cargarSitio);
+        // Función para cargar personajes
+        function cargarPersonajes() {
+            if (isLoading) return;
+            isLoading = true;
 
+            loader.style.display = 'block';
 
-       function cargarSitio() {
-           fetch('https://rickandmortyapi.com/api/character')
-           .then(respuesta => respuesta.json())
-           .then(data => rendero(data))
-        
-       }
+            fetch(`https://rickandmortyapi.com/api/character?page=${page}`)
+                .then(respuesta => respuesta.json())
+                .then(data => {
+                    renderizarPersonajes(data.results);
+                    page++;
+                })
+                .catch(error => {
+                    console.error('Error al cargar personajes:', error);
+                })
+                .finally(() => {
+                    isLoading = false;
+                    loader.style.display = 'none';
+                    response.classList.add('loaded');
+                });
+        }
 
-       function rendero(data) {
-        //    console.log(data.results[0].name);
-        data.results.forEach(element => {
-            console.log(element.image);
-            response.innerHTML += `<img src="${element.image}"/>`
-        })
-       }
+        // Función para renderizar personajes
+        function renderizarPersonajes(personajes) {
+            const fragment = document.createDocumentFragment();
 
+            personajes.forEach(element => {
+                const imagen = new Image();
+                imagen.src = element.image;
+                imagen.alt = element.name;
+                imagen.addEventListener('load', function () {
+                    response.appendChild(imagen);
+                });
+                imagen.addEventListener('error', function () {
+                    console.error('Error al cargar la imagen:', imagen.src);
+                });
+            });
 
+            response.appendChild(fragment);
+        }
 
+        // Función para verificar si el scroll está en la parte inferior
+        function estaEnElFondo() {
+            return window.innerHeight + window.scrollY >= document.body.offsetHeight;
+        }
 
+        // Evento de scroll
+        window.addEventListener('scroll', function () {
+            if (estaEnElFondo()) {
+                cargarPersonajes();
+            }
+        });
 
-
+        // Cargar personajes inicialmente
+        cargarPersonajes();
     </script>
 </body>
+
 </html>
